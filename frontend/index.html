@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailYatri - Indian Railway Ticket Booking System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- HEADER & NAVBAR -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand" onclick="switchTab('search')">
+                <span class="brand-icon">🚆</span>
+                <div class="brand-text">
+                    <span class="brand-title">RailYatri</span>
+                    <span class="brand-subtitle">Indian Railway Booking</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-link active" id="navSearchBtn" onclick="switchTab('search')">Book Ticket</button>
+                <button class="nav-link" id="navPnrBtn" onclick="switchTab('pnr')">PNR Status</button>
+                <button class="nav-link" id="navBookingsBtn" onclick="switchTab('bookings')">My Bookings</button>
+                <button class="nav-link" id="navAdminBtn" onclick="switchTab('admin')">Admin Panel</button>
+            </nav>
+
+            <div class="nav-auth">
+                <div id="guestNav" class="auth-buttons">
+                    <button class="btn btn-outline" onclick="openAuthModal('login')">Sign In</button>
+                    <button class="btn btn-primary" onclick="openAuthModal('register')">Register</button>
+                </div>
+                <div id="userNav" class="user-profile" style="display: none;">
+                    <div class="user-avatar" id="navAvatar">U</div>
+                    <div class="user-info">
+                        <span class="user-name" id="navUserName">User</span>
+                        <span class="user-role" id="navUserRole">Passenger</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- NOTIFICATION TOAST -->
+        <div id="toast" class="toast"></div>
+
+        <!-- 1. TRAIN SEARCH & BOOKING TAB -->
+        <section id="searchTab" class="tab-pane active">
+            <!-- HERO BANNER & SEARCH FORM -->
+            <div class="hero-card">
+                <div class="hero-header">
+                    <h1>Book Train Tickets in Seconds</h1>
+                    <p>Search express trains, check live seat availability, and download confirmed E-Tickets.</p>
+                </div>
+
+                <form id="searchForm" class="search-form" onsubmit="handleSearchTrains(event)">
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="fromStation">From Station</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">📍</span>
+                                <input type="text" id="fromStation" placeholder="e.g. New Delhi" list="stationList">
+                            </div>
+                        </div>
+
+                        <button type="button" class="swap-stations-btn" onclick="swapStations()" title="Swap Stations">⇄</button>
+
+                        <div class="form-group flex-1">
+                            <label for="toStation">To Station</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">🎯</span>
+                                <input type="text" id="toStation" placeholder="e.g. Mumbai" list="stationList">
+                            </div>
+                        </div>
+
+                        <div class="form-group flex-1">
+                            <label for="journeyDate">Journey Date</label>
+                            <input type="date" id="journeyDate">
+                        </div>
+
+                        <div class="form-group flex-1">
+                            <label for="travelClass">Class</label>
+                            <select id="travelClass">
+                                <option value="ALL">All Classes</option>
+                                <option value="1A">AC First Class (1A)</option>
+                                <option value="2A">AC 2 Tier (2A)</option>
+                                <option value="3A" selected>AC 3 Tier (3A)</option>
+                                <option value="SL">Sleeper (SL)</option>
+                                <option value="CC">AC Chair Car (CC)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-action">
+                            <button type="submit" class="btn btn-search">
+                                <span>🔍</span> Search Trains
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Station Tags -->
+                    <div class="popular-routes">
+                        <span class="routes-label">Popular Routes:</span>
+                        <button type="button" class="route-tag" onclick="setRoute('New Delhi', 'Varanasi')">Delhi ➔ Varanasi</button>
+                        <button type="button" class="route-tag" onclick="setRoute('New Delhi', 'Mumbai')">Delhi ➔ Mumbai</button>
+                        <button type="button" class="route-tag" onclick="setRoute('Mumbai', 'Howrah')">Mumbai ➔ Howrah</button>
+                        <button type="button" class="route-tag" onclick="setRoute('New Delhi', 'Bengaluru')">Delhi ➔ Bengaluru</button>
+                        <button type="button" class="route-tag" onclick="setRoute('Howrah', 'Puri')">Howrah ➔ Puri</button>
+                    </div>
+
+                    <datalist id="stationList">
+                        <option value="New Delhi"></option>
+                        <option value="Mumbai"></option>
+                        <option value="Varanasi"></option>
+                        <option value="Bhopal"></option>
+                        <option value="Howrah"></option>
+                        <option value="Bengaluru"></option>
+                        <option value="Chennai"></option>
+                        <option value="Amritsar"></option>
+                        <option value="Puri"></option>
+                        <option value="Ahmedabad"></option>
+                        <option value="Jaipur"></option>
+                        <option value="Lucknow"></option>
+                    </datalist>
+                </form>
+            </div>
+
+            <!-- TRAINS RESULTS SECTION -->
+            <div class="results-container">
+                <div class="results-header">
+                    <h2 id="resultsHeading">All Available Trains</h2>
+                    <span class="results-count" id="resultsCount">Loading...</span>
+                </div>
+
+                <div id="trainsList" class="trains-grid">
+                    <!-- Dynamic train cards populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. PNR ENQUIRY TAB -->
+        <section id="pnrTab" class="tab-pane">
+            <div class="card pnr-card">
+                <div class="card-header">
+                    <h2>Passenger Name Record (PNR) Status Enquiry</h2>
+                    <p>Enter your 10-digit PNR number printed on your ticket to check current status.</p>
+                </div>
+                <div class="pnr-input-group">
+                    <input type="text" id="pnrSearchInput" placeholder="Enter 10-digit PNR Number (e.g. 8472910482)" maxlength="10">
+                    <button class="btn btn-primary" onclick="searchPnr()">Check Status</button>
+                </div>
+                <div id="pnrResult" class="pnr-result-box" style="display: none;"></div>
+            </div>
+        </section>
+
+        <!-- 3. MY BOOKINGS TAB -->
+        <section id="bookingsTab" class="tab-pane">
+            <div class="card bookings-card">
+                <div class="card-header flex-between">
+                    <div>
+                        <h2>My Bookings & Tickets</h2>
+                        <p>View, print, or cancel your booked train journeys.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="loadUserBookings()">Refresh List</button>
+                </div>
+                <div id="bookingsList" class="bookings-list">
+                    <!-- Dynamic booking cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. ADMIN PANEL TAB -->
+        <section id="adminTab" class="tab-pane">
+            <div class="card admin-card">
+                <div class="card-header">
+                    <h2>Admin Train Management</h2>
+                    <p>Add new train routes, adjust seat capacities, and view train inventory.</p>
+                </div>
+
+                <form id="addTrainForm" onsubmit="handleAddTrain(event)" class="admin-form">
+                    <div class="admin-grid">
+                        <div class="form-group">
+                            <label for="adminTrainName">Train Name *</label>
+                            <input type="text" id="adminTrainName" required placeholder="e.g. Tejas Express">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminTrainNumber">Train Number *</label>
+                            <input type="text" id="adminTrainNumber" required placeholder="e.g. 82501">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminSource">Source Station *</label>
+                            <input type="text" id="adminSource" required placeholder="e.g. Lucknow">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminDestination">Destination Station *</label>
+                            <input type="text" id="adminDestination" required placeholder="e.g. New Delhi">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminDeparture">Departure Time</label>
+                            <input type="text" id="adminDeparture" value="06:10 AM">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminArrival">Arrival Time</label>
+                            <input type="text" id="adminArrival" value="12:25 PM">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminFare">Fare (₹) *</label>
+                            <input type="number" id="adminFare" required min="100" step="10" placeholder="1250">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminSeats">Total Seats *</label>
+                            <input type="number" id="adminSeats" required min="10" max="500" value="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminType">Train Type</label>
+                            <select id="adminType">
+                                <option value="Vande Bharat">Vande Bharat</option>
+                                <option value="Rajdhani">Rajdhani Express</option>
+                                <option value="Shatabdi">Shatabdi Express</option>
+                                <option value="Superfast" selected>Superfast Express</option>
+                                <option value="Express">Express</option>
+                                <option value="Mail">Mail</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success mt-3">Add Train to System</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- BOOKING MODAL -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Confirm Ticket Reservation</h3>
+                    <button class="modal-close" onclick="closeModal('bookingModal')">×</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Selected Train Summary Banner -->
+                    <div class="train-summary-badge" id="modalTrainSummary">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <form id="passengerBookingForm" onsubmit="handleProceedToPayment(event)">
+                        <div class="form-section-title">Passenger Details</div>
+                        <div class="form-group">
+                            <label for="modalPassengerName">Full Name *</label>
+                            <input type="text" id="modalPassengerName" required placeholder="Enter passenger name">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label for="modalPassengerAge">Age</label>
+                                <input type="number" id="modalPassengerAge" min="5" max="110" value="26">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="modalPassengerGender">Gender</label>
+                                <select id="modalPassengerGender">
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="modalBerth">Berth Preference</label>
+                                <select id="modalBerth">
+                                    <option value="Lower">Lower</option>
+                                    <option value="Middle">Middle</option>
+                                    <option value="Upper">Upper</option>
+                                    <option value="Side Lower">Side Lower</option>
+                                    <option value="Side Upper">Side Upper</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label for="modalCoachClass">Coach / Class</label>
+                                <select id="modalCoachClass" onchange="updateBookingFare()">
+                                    <option value="B1 (3A)">B1 - AC 3-Tier (Base Fare)</option>
+                                    <option value="A1 (2A)">A1 - AC 2-Tier (+ ₹450)</option>
+                                    <option value="H1 (1A)">H1 - AC 1st Class (+ ₹950)</option>
+                                    <option value="S1 (SL)">S1 - Sleeper (- ₹400)</option>
+                                </select>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="modalSeatCount">Seats Count</label>
+                                <select id="modalSeatCount" onchange="updateBookingFare()">
+                                    <option value="1">1 Passenger</option>
+                                    <option value="2">2 Passengers</option>
+                                    <option value="3">3 Passengers</option>
+                                    <option value="4">4 Passengers</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Price Breakdown -->
+                        <div class="fare-summary-card">
+                            <div class="fare-row">
+                                <span>Ticket Fare:</span>
+                                <span id="summaryBaseFare">₹0.00</span>
+                            </div>
+                            <div class="fare-row">
+                                <span>IRCTC Convenience Fee:</span>
+                                <span>₹35.40</span>
+                            </div>
+                            <div class="fare-row total">
+                                <span>Total Payable Amount:</span>
+                                <span id="summaryTotalFare" class="total-price">₹0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="form-section-title mt-3">Select Payment Method</div>
+                        <div class="payment-methods">
+                            <label class="payment-option active">
+                                <input type="radio" name="payMethod" value="UPI" checked>
+                                <span class="method-icon">📱</span>
+                                <span>UPI (GPay / PhonePe / Paytm)</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payMethod" value="Card">
+                                <span class="method-icon">💳</span>
+                                <span>Credit / Debit Card</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payMethod" value="NetBanking">
+                                <span class="method-icon">🏦</span>
+                                <span>Net Banking</span>
+                            </label>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline" onclick="closeModal('bookingModal')">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="btnPayAndBook">Pay & Confirm Ticket</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TICKET CONFIRMATION & PRINT MODAL -->
+    <div id="ticketModal" class="modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header print-hide">
+                    <h3>Booking Confirmed! 🎉</h3>
+                    <button class="modal-close" onclick="closeModal('ticketModal')">×</button>
+                </div>
+                <div class="modal-body">
+                    <!-- E-TICKET CARD (IRCTC Style) -->
+                    <div id="ticketPrintArea" class="ticket-container">
+                        <div class="ticket-header">
+                            <div class="ticket-brand">
+                                <span class="ticket-logo">🚆</span>
+                                <div>
+                                    <div class="rail-title">INDIAN RAILWAYS RESERVATION</div>
+                                    <div class="rail-subtitle">Electronic Reservation Slip (ERS)</div>
+                                </div>
+                            </div>
+                            <div class="ticket-pnr-badge">
+                                <span class="pnr-title">PNR NUMBER</span>
+                                <span class="pnr-number" id="ticketPnr">8472910482</span>
+                            </div>
+                        </div>
+
+                        <div class="ticket-status-bar">
+                            <span class="badge badge-success" id="ticketStatusBadge">CONFIRMED (CNF)</span>
+                            <span id="ticketTxnId" class="ticket-date-txt">TXN ID: TXN_109284729</span>
+                        </div>
+
+                        <div class="ticket-details-grid">
+                            <div class="ticket-field">
+                                <span class="field-label">Train No. & Name</span>
+                                <span class="field-value highlight" id="ticketTrainName">12952 / Rajdhani Express</span>
+                            </div>
+                            <div class="ticket-field">
+                                <span class="field-label">Journey Date</span>
+                                <span class="field-value" id="ticketJourneyDate">15 Oct 2026</span>
+                            </div>
+                            <div class="ticket-field">
+                                <span class="field-label">From Station</span>
+                                <span class="field-value" id="ticketSource">New Delhi</span>
+                            </div>
+                            <div class="ticket-field">
+                                <span class="field-label">To Station</span>
+                                <span class="field-value" id="ticketDestination">Mumbai</span>
+                            </div>
+                            <div class="ticket-field">
+                                <span class="field-label">Class & Coach</span>
+                                <span class="field-value" id="ticketCoach">3A / B2</span>
+                            </div>
+                            <div class="ticket-field">
+                                <span class="field-label">Allocated Seat</span>
+                                <span class="field-value seat-badge" id="ticketSeat">B2-24</span>
+                            </div>
+                        </div>
+
+                        <!-- Passenger Table -->
+                        <table class="ticket-passenger-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Passenger Name</th>
+                                    <th>Seats</th>
+                                    <th>Status</th>
+                                    <th>Total Fare</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td id="ticketPassengerName">Yashi Saxena</td>
+                                    <td id="ticketPassengerCount">1</td>
+                                    <td><span class="badge badge-cnf">CNF / CONFIRMED</span></td>
+                                    <td id="ticketFareAmount">₹2,450.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="ticket-footer">
+                            <div class="qr-mock">
+                                <div class="qr-box">QR CODE</div>
+                                <span class="qr-label">Scan to verify</span>
+                            </div>
+                            <div class="ticket-terms">
+                                <p>• Please carry original valid government Photo ID during the journey.</p>
+                                <p>• Check Departure/Arrival schedules on the official Railway enquiry portal.</p>
+                                <p>• Cancellation is permitted up to 4 hours prior to train departure.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer print-hide">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('ticketModal')">Close</button>
+                        <button type="button" class="btn btn-secondary" onclick="window.print()">🖨️ Print Ticket</button>
+                        <button type="button" class="btn btn-primary" onclick="switchTab('bookings'); closeModal('ticketModal');">View in My Bookings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTHENTICATION (LOGIN / REGISTER) MODAL -->
+    <div id="authModal" class="modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="authModalTitle">Sign In</h3>
+                    <button class="modal-close" onclick="closeModal('authModal')">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="auth-tabs">
+                        <button type="button" class="auth-tab-btn active" id="tabBtnLogin" onclick="setAuthTab('login')">Sign In</button>
+                        <button type="button" class="auth-tab-btn" id="tabBtnRegister" onclick="setAuthTab('register')">Register</button>
+                    </div>
+
+                    <!-- LOGIN FORM -->
+                    <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+                        <div class="form-group">
+                            <label for="loginEmail">Email Address</label>
+                            <input type="email" id="loginEmail" required placeholder="yashi@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" required placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block mt-3">Sign In</button>
+                    </form>
+
+                    <!-- REGISTER FORM -->
+                    <form id="registerForm" onsubmit="handleRegisterSubmit(event)" style="display: none;">
+                        <div class="form-group">
+                            <label for="regFullName">Full Name</label>
+                            <input type="text" id="regFullName" required placeholder="Yashi Saxena">
+                        </div>
+                        <div class="form-group">
+                            <label for="regEmail">Email Address</label>
+                            <input type="email" id="regEmail" required placeholder="yashi@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="regPhone">Phone Number</label>
+                            <input type="tel" id="regPhone" placeholder="9876543210">
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword">Password</label>
+                            <input type="password" id="regPassword" required placeholder="Create password">
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block mt-3">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p>© 2026 RailYatri - Railway Ticket Reservation System. Built with Spring Boot 4, Oracle Database & Modern Web UI.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
