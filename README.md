@@ -64,8 +64,8 @@ Edit `backend/railwaybooking/src/main/resources/application.properties` with you
 ```properties
 server.port=8081
 spring.datasource.url=jdbc:oracle:thin:@localhost:1521/ORCLPDB
-spring.datasource.username=system
-spring.datasource.password=Yashi@123
+spring.datasource.username=YOUR_ORACLE_USERNAME
+spring.datasource.password=YOUR_ORACLE_PASSWORD
 spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
 spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
 spring.jpa.hibernate.ddl-auto=update
