@@ -1,0 +1,18 @@
+# Maven / Java build artefacts
+/target/
+*.class
+*.log
+
+# IDE / editor files
+/.idea/
+/.vscode/
+*.iml
+*.project
+*.classpath
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
