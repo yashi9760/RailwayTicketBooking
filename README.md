@@ -32,6 +32,23 @@ Welcome to the **Railway Ticket Booking System**, a comprehensive, full-stack ap
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="ist%20page.png" alt="Home Page" width="800"/>
+  <br/><br/>
+  <img src="2.png" alt="Screenshot 2" width="400"/>
+  <img src="3.png" alt="Screenshot 3" width="400"/>
+  <br/><br/>
+  <img src="4.png" alt="Screenshot 4" width="400"/>
+  <img src="5.png" alt="Screenshot 5" width="400"/>
+  <br/><br/>
+  <img src="6.png" alt="Screenshot 6" width="400"/>
+  <img src="7.png" alt="Screenshot 7" width="400"/>
+</div>
+
+---
+
 ## 🛠️ Technology Stack
 
 ### Backend
